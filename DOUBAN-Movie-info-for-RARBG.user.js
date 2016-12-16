@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.4
+// @version      0.4.1
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
