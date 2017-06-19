@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -13,6 +13,7 @@
 // @grant        GM_setValue
 // @connect      api.douban.com
 // ==/UserScript==
+
 function isEmpty(s) {
     return !s || s === 'N/A';
 }
