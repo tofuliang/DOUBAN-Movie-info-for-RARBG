@@ -6,6 +6,8 @@
 // @author       tofuliang
 // @match        https://rarbg.to/*
 // @match        http://rarbg.to/*
+// @match        https://rarbg.is/*
+// @match        http://rarbg.is/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
