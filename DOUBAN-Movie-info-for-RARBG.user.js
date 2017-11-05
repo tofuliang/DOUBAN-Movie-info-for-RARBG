@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.4.2
+// @version      0.4.3
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -28,7 +28,7 @@ $('body').on('mouseenter', 'a[data-imdbId]', function() {
         html += '    <div class="db-title">';
         html += '        <p>' + data.title + ' ' + data.alt_title + ' (' + data.attrs.year.join(' / ') + ')</p>';
         html += '    </div>';
-        html += '    <div class="db-left"><div class="db-poster"><img src="' + data.image + '"></div>';
+        html += '    <div class="db-left"><div class="db-poster"><img style="max-width: 135px;" src="' + data.image + '"></div>';
         html += '    <div class="db-score">';
         html += '        <p>' + data.rating.average + ' / ' + data.rating.numRaters + '</p>';
         html += '    </div></div>';
