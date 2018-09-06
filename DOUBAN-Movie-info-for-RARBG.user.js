@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.4.3
+// @version      0.4.4
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
 // @match        http://rarbg.to/*
 // @match        https://rarbg.is/*
 // @match        http://rarbg.is/*
+// @match        https://rarbgprx.org/*
+// @match        http://rarbgprx.org/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
