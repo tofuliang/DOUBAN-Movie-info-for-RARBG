@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.5.1
+// @version      0.5.2
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -14,15 +14,25 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
+// @grant        GM_listValues
 // @grant        GM_registerMenuCommand
+// @grant        GM_download
+// @grant        GM_info
 // @connect      api.douban.com
 // ==/UserScript==
 
 function isEmpty(s) {
     return !s || s === 'N/A';
 }
-var emptyStar = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDQ5Ljk0IDQ5Ljk0IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA0OS45NCA0OS45NDsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHdpZHRoPSI1MTJweCIgaGVpZ2h0PSI1MTJweCI+CjxwYXRoIGQ9Ik00OC44NTYsMjIuNzMxYzAuOTgzLTAuOTU4LDEuMzMtMi4zNjQsMC45MDYtMy42NzFjLTAuNDI1LTEuMzA3LTEuNTMyLTIuMjQtMi44OTItMi40MzhsLTEyLjA5Mi0xLjc1NyAgYy0wLjUxNS0wLjA3NS0wLjk2LTAuMzk4LTEuMTktMC44NjVMMjguMTgyLDMuMDQzYy0wLjYwNy0xLjIzMS0xLjgzOS0xLjk5Ni0zLjIxMi0xLjk5NmMtMS4zNzIsMC0yLjYwNCwwLjc2NS0zLjIxMSwxLjk5NiAgTDE2LjM1MiwxNGMtMC4yMywwLjQ2Ny0wLjY3NiwwLjc5LTEuMTkxLDAuODY1TDMuMDY5LDE2LjYyM0MxLjcxLDE2LjgyLDAuNjAzLDE3Ljc1MywwLjE3OCwxOS4wNiAgYy0wLjQyNCwxLjMwNy0wLjA3NywyLjcxMywwLjkwNiwzLjY3MWw4Ljc0OSw4LjUyOGMwLjM3MywwLjM2NCwwLjU0NCwwLjg4OCwwLjQ1NiwxLjRMOC4yMjQsNDQuNzAyICBjLTAuMjMyLDEuMzUzLDAuMzEzLDIuNjk0LDEuNDI0LDMuNTAyYzEuMTEsMC44MDksMi41NTUsMC45MTQsMy43NzIsMC4yNzNsMTAuODE0LTUuNjg2YzAuNDYxLTAuMjQyLDEuMDExLTAuMjQyLDEuNDcyLDAgIGwxMC44MTUsNS42ODZjMC41MjgsMC4yNzgsMS4xLDAuNDE1LDEuNjY5LDAuNDE1YzAuNzM5LDAsMS40NzUtMC4yMzEsMi4xMDMtMC42ODhjMS4xMTEtMC44MDgsMS42NTYtMi4xNDksMS40MjQtMy41MDIgIEwzOS42NTEsMzIuNjZjLTAuMDg4LTAuNTEzLDAuMDgzLTEuMDM2LDAuNDU2LTEuNEw0OC44NTYsMjIuNzMxeiBNMzcuNjgxLDMyLjk5OGwyLjA2NSwxMi4wNDJjMC4xMDQsMC42MDYtMC4xMzEsMS4xODUtMC42MjksMS41NDcgIGMtMC40OTksMC4zNjEtMS4xMiwwLjQwNS0xLjY2NSwwLjEyMWwtMTAuODE1LTUuNjg3Yy0wLjUyMS0wLjI3My0xLjA5NS0wLjQxMS0xLjY2Ny0wLjQxMXMtMS4xNDUsMC4xMzgtMS42NjcsMC40MTJsLTEwLjgxMyw1LjY4NiAgYy0wLjU0NywwLjI4NC0xLjE2OCwwLjI0LTEuNjY2LTAuMTIxYy0wLjQ5OC0wLjM2Mi0wLjczMi0wLjk0LTAuNjI5LTEuNTQ3bDIuMDY1LTEyLjA0MmMwLjE5OS0xLjE2Mi0wLjE4Ni0yLjM0OC0xLjAzLTMuMTcgIEwyLjQ4LDIxLjI5OWMtMC40NDEtMC40My0wLjU5MS0xLjAzNi0wLjQtMS42MjFjMC4xOS0wLjU4NiwwLjY2Ny0wLjk4OCwxLjI3Ni0xLjA3N2wxMi4wOTEtMS43NTcgIGMxLjE2Ny0wLjE2OSwyLjE3Ni0wLjkwMSwyLjY5Ny0xLjk1OWw1LjQwNy0xMC45NTdjMC4yNzItMC41NTIsMC44MDMtMC44ODEsMS40MTgtMC44ODFjMC42MTYsMCwxLjE0NiwwLjMyOSwxLjQxOSwwLjg4MSAgbDUuNDA3LDEwLjk1N2MwLjUyMSwxLjA1OCwxLjUyOSwxLjc5LDIuNjk2LDEuOTU5bDEyLjA5MiwxLjc1N2MwLjYwOSwwLjA4OSwxLjA4NiwwLjQ5MSwxLjI3NiwxLjA3NyAgYzAuMTksMC41ODUsMC4wNDEsMS4xOTEtMC40LDEuNjIxbC04Ljc0OSw4LjUyOEMzNy44NjYsMzAuNjUsMzcuNDgxLDMxLjgzNSwzNy42ODEsMzIuOTk4eiIgZmlsbD0iI0ZGREE0NCIvPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8L3N2Zz4K';
-var solidStar = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNTEyLjAwMiA1MTIuMDAyIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1MTIuMDAyIDUxMi4wMDI7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxsaW5lYXJHcmFkaWVudCBpZD0iU1ZHSURfMV8iIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMjM2LjkzODIiIHkxPSI0NTguNDI4NCIgeDI9IjIzNi45MzgyIiB5Mj0iLTcxLjE4MTYiIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMS4wNjY3IDAgMCAtMS4wNjY3IDMuMjY2NiA1NTcuNTM1MikiPg0KCTxzdG9wICBvZmZzZXQ9IjAiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkNGOTUiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjQyNyIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzk1NCIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkMyMDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzFfKTsiIGQ9Ik0yNzQuODQsMjMuMjEybDY3LjcyMiwxMzcuMjE4bDE1MS40MjksMjIuMDA0YzE3LjIzMiwyLjUwMywyNC4xMTIsMjMuNjgsMTEuNjQ0LDM1LjgzNQ0KCUwzOTYuMDU4LDMyNS4wNzdsMjUuODY3LDE1MC44MTdjMi45NDQsMTcuMTYyLTE1LjA3LDMwLjI1LTMwLjQ4MiwyMi4xNDdMMjU2LDQyNi44MzVsLTEzNS40NDIsNzEuMjA2DQoJYy0xNS40MTIsOC4xMDItMzMuNDI2LTQuOTg1LTMwLjQ4Mi0yMi4xNDdsMjUuODY3LTE1MC44MTdMNi4zNjcsMjE4LjI2OGMtMTIuNDY5LTEyLjE1NS01LjU4OC0zMy4zMywxMS42NDQtMzUuODM1bDE1MS40MjktMjIuMDA0DQoJbDY3LjcyMS0xMzcuMjE3QzI0NC44NjgsNy41OTcsMjY3LjEzMyw3LjU5NywyNzQuODQsMjMuMjEyeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF8yXyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzNjEuMzM4IiB5MT0iMzkwLjEzMTQiIHgyPSIyMDEuMjM4IiB5Mj0iMzkwLjEzMTQiIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMS4wNjY3IDAgMCAtMS4wNjY3IDMuMjY2NiA1NTcuNTM1MikiPg0KCTxzdG9wICBvZmZzZXQ9IjAiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkMyMDA7c3RvcC1vcGFjaXR5OjAiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjIwMyIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQkIwMDtzdG9wLW9wYWNpdHk6MC4yMDMiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjQ5OSIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQTcwMDtzdG9wLW9wYWNpdHk6MC40OTkiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjg1MiIgc3R5bGU9InN0b3AtY29sb3I6I0ZGODgwMDtzdG9wLW9wYWNpdHk6MC44NTIiLz4NCgk8c3RvcCAgb2Zmc2V0PSIxIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY3ODAwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPHBhdGggc3R5bGU9ImZpbGw6dXJsKCNTVkdJRF8yXyk7IiBkPSJNMzQyLjU2LDE2MC40M0wyNzQuODQsMjMuMjEyYy0zLjg1My03LjgwNy0xMS4zNDYtMTEuNzExLTE4LjgzOS0xMS43MTF2MjU5Ljc4OQ0KCUwzNDIuNTYsMTYwLjQzeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF8zXyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzODguNjg3NCIgeTE9IjE0NC44MzgzIiB4Mj0iMzQ2LjI4NzQiIHkyPSIzNTMuNjM4MyIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzNfKTsiIGQ9Ik0zOTYuMDU4LDMyNS4wNzdsMTA5LjU3NS0xMDYuODFjNi4xNTEtNS45OTYsNy41ODYtMTQuMTg1LDUuMzk5LTIxLjI0N0wyNTYsMjcxLjI4OQ0KCUwzOTYuMDU4LDMyNS4wNzd6Ii8+DQo8bGluZWFyR3JhZGllbnQgaWQ9IlNWR0lEXzRfIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjE4My4wOTc3IiB5MT0iMzUuMTA4NyIgeDI9IjM0OS4xNTc3IiB5Mj0iMjAxLjE2ODciIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMS4wNjY3IDAgMCAtMS4wNjY3IDMuMjY2NiA1NTcuNTM1MikiPg0KCTxzdG9wICBvZmZzZXQ9IjAiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkMyMDA7c3RvcC1vcGFjaXR5OjAiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjIwMyIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQkIwMDtzdG9wLW9wYWNpdHk6MC4yMDMiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjQ5OSIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQTcwMDtzdG9wLW9wYWNpdHk6MC40OTkiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjg1MiIgc3R5bGU9InN0b3AtY29sb3I6I0ZGODgwMDtzdG9wLW9wYWNpdHk6MC44NTIiLz4NCgk8c3RvcCAgb2Zmc2V0PSIxIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY3ODAwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPHBhdGggc3R5bGU9ImZpbGw6dXJsKCNTVkdJRF80Xyk7IiBkPSJNNDEzLjYzLDQ5Ni4zOTNMMjU2LDI3MS4yODl2MTU1LjU0NmwxMzUuNDQyLDcxLjIwNg0KCUMzOTkuMTc2LDUwMi4xMDcsNDA3LjU2Myw1MDAuODM1LDQxMy42Myw0OTYuMzkzeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF81XyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSI2NC42Nzc3IiB5MT0iMjQ1LjEwOCIgeDI9IjE4Ny4wNzc3IiB5Mj0iMTQyLjcwOCIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzVfKTsiIGQ9Ik0yNTYsMjcxLjI4OWwtMTQwLjA1OCw1My43ODhMOTAuMDc2LDQ3NS44OTRjLTEuNDY3LDguNTUsMi4yNzEsMTYuMDg3LDguMjk0LDIwLjQ5OQ0KCUwyNTYsMjcxLjI4OXoiLz4NCjxsaW5lYXJHcmFkaWVudCBpZD0iU1ZHSURfNl8iIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMTU2LjQzMzQiIHkxPSI0MTQuMDIiIHgyPSIxMDYuODMzNCIgeTI9IjI3My4yMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzZfKTsiIGQ9Ik0wLjk2OCwxOTcuMDIxTDI1NiwyNzEuMjg5bC04Ni41Ni0xMTAuODZMMTguMDExLDE4Mi40MzQNCglDOS4yOCwxODMuNzAyLDMuMjE0LDE4OS43NjcsMC45NjgsMTk3LjAyMUwwLjk2OCwxOTcuMDIxeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF83XyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzNDMuMTM5OSIgeTE9IjM5OS4zMTY0IiB4Mj0iLTIxLjI2MDEiIHkyPSIyNDQuMTE2NCIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzdfKTsiIGQ9Ik0xMTUuOTQzLDMyNS4wNzdMNi4zNjcsMjE4LjI2OGMtNi4xNTEtNS45OTYtNy41ODYtMTQuMTg1LTUuMzk5LTIxLjI0N0wyNTYsMjcxLjI4OQ0KCUwxMTUuOTQzLDMyNS4wNzd6Ii8+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8L3N2Zz4NCg==';
+function encode(s) {
+    let out = [];
+    for ( let i = 0; i < s.length; i++ ) {
+        out[i] = s.charCodeAt(i);
+    }
+    return new Uint8Array( out );
+}
+let emptyStar = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDQ5Ljk0IDQ5Ljk0IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA0OS45NCA0OS45NDsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHdpZHRoPSI1MTJweCIgaGVpZ2h0PSI1MTJweCI+CjxwYXRoIGQ9Ik00OC44NTYsMjIuNzMxYzAuOTgzLTAuOTU4LDEuMzMtMi4zNjQsMC45MDYtMy42NzFjLTAuNDI1LTEuMzA3LTEuNTMyLTIuMjQtMi44OTItMi40MzhsLTEyLjA5Mi0xLjc1NyAgYy0wLjUxNS0wLjA3NS0wLjk2LTAuMzk4LTEuMTktMC44NjVMMjguMTgyLDMuMDQzYy0wLjYwNy0xLjIzMS0xLjgzOS0xLjk5Ni0zLjIxMi0xLjk5NmMtMS4zNzIsMC0yLjYwNCwwLjc2NS0zLjIxMSwxLjk5NiAgTDE2LjM1MiwxNGMtMC4yMywwLjQ2Ny0wLjY3NiwwLjc5LTEuMTkxLDAuODY1TDMuMDY5LDE2LjYyM0MxLjcxLDE2LjgyLDAuNjAzLDE3Ljc1MywwLjE3OCwxOS4wNiAgYy0wLjQyNCwxLjMwNy0wLjA3NywyLjcxMywwLjkwNiwzLjY3MWw4Ljc0OSw4LjUyOGMwLjM3MywwLjM2NCwwLjU0NCwwLjg4OCwwLjQ1NiwxLjRMOC4yMjQsNDQuNzAyICBjLTAuMjMyLDEuMzUzLDAuMzEzLDIuNjk0LDEuNDI0LDMuNTAyYzEuMTEsMC44MDksMi41NTUsMC45MTQsMy43NzIsMC4yNzNsMTAuODE0LTUuNjg2YzAuNDYxLTAuMjQyLDEuMDExLTAuMjQyLDEuNDcyLDAgIGwxMC44MTUsNS42ODZjMC41MjgsMC4yNzgsMS4xLDAuNDE1LDEuNjY5LDAuNDE1YzAuNzM5LDAsMS40NzUtMC4yMzEsMi4xMDMtMC42ODhjMS4xMTEtMC44MDgsMS42NTYtMi4xNDksMS40MjQtMy41MDIgIEwzOS42NTEsMzIuNjZjLTAuMDg4LTAuNTEzLDAuMDgzLTEuMDM2LDAuNDU2LTEuNEw0OC44NTYsMjIuNzMxeiBNMzcuNjgxLDMyLjk5OGwyLjA2NSwxMi4wNDJjMC4xMDQsMC42MDYtMC4xMzEsMS4xODUtMC42MjksMS41NDcgIGMtMC40OTksMC4zNjEtMS4xMiwwLjQwNS0xLjY2NSwwLjEyMWwtMTAuODE1LTUuNjg3Yy0wLjUyMS0wLjI3My0xLjA5NS0wLjQxMS0xLjY2Ny0wLjQxMXMtMS4xNDUsMC4xMzgtMS42NjcsMC40MTJsLTEwLjgxMyw1LjY4NiAgYy0wLjU0NywwLjI4NC0xLjE2OCwwLjI0LTEuNjY2LTAuMTIxYy0wLjQ5OC0wLjM2Mi0wLjczMi0wLjk0LTAuNjI5LTEuNTQ3bDIuMDY1LTEyLjA0MmMwLjE5OS0xLjE2Mi0wLjE4Ni0yLjM0OC0xLjAzLTMuMTcgIEwyLjQ4LDIxLjI5OWMtMC40NDEtMC40My0wLjU5MS0xLjAzNi0wLjQtMS42MjFjMC4xOS0wLjU4NiwwLjY2Ny0wLjk4OCwxLjI3Ni0xLjA3N2wxMi4wOTEtMS43NTcgIGMxLjE2Ny0wLjE2OSwyLjE3Ni0wLjkwMSwyLjY5Ny0xLjk1OWw1LjQwNy0xMC45NTdjMC4yNzItMC41NTIsMC44MDMtMC44ODEsMS40MTgtMC44ODFjMC42MTYsMCwxLjE0NiwwLjMyOSwxLjQxOSwwLjg4MSAgbDUuNDA3LDEwLjk1N2MwLjUyMSwxLjA1OCwxLjUyOSwxLjc5LDIuNjk2LDEuOTU5bDEyLjA5MiwxLjc1N2MwLjYwOSwwLjA4OSwxLjA4NiwwLjQ5MSwxLjI3NiwxLjA3NyAgYzAuMTksMC41ODUsMC4wNDEsMS4xOTEtMC40LDEuNjIxbC04Ljc0OSw4LjUyOEMzNy44NjYsMzAuNjUsMzcuNDgxLDMxLjgzNSwzNy42ODEsMzIuOTk4eiIgZmlsbD0iI0ZGREE0NCIvPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8L3N2Zz4K';
+let solidStar = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNTEyLjAwMiA1MTIuMDAyIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1MTIuMDAyIDUxMi4wMDI7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxsaW5lYXJHcmFkaWVudCBpZD0iU1ZHSURfMV8iIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMjM2LjkzODIiIHkxPSI0NTguNDI4NCIgeDI9IjIzNi45MzgyIiB5Mj0iLTcxLjE4MTYiIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMS4wNjY3IDAgMCAtMS4wNjY3IDMuMjY2NiA1NTcuNTM1MikiPg0KCTxzdG9wICBvZmZzZXQ9IjAiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkNGOTUiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjQyNyIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzk1NCIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkMyMDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzFfKTsiIGQ9Ik0yNzQuODQsMjMuMjEybDY3LjcyMiwxMzcuMjE4bDE1MS40MjksMjIuMDA0YzE3LjIzMiwyLjUwMywyNC4xMTIsMjMuNjgsMTEuNjQ0LDM1LjgzNQ0KCUwzOTYuMDU4LDMyNS4wNzdsMjUuODY3LDE1MC44MTdjMi45NDQsMTcuMTYyLTE1LjA3LDMwLjI1LTMwLjQ4MiwyMi4xNDdMMjU2LDQyNi44MzVsLTEzNS40NDIsNzEuMjA2DQoJYy0xNS40MTIsOC4xMDItMzMuNDI2LTQuOTg1LTMwLjQ4Mi0yMi4xNDdsMjUuODY3LTE1MC44MTdMNi4zNjcsMjE4LjI2OGMtMTIuNDY5LTEyLjE1NS01LjU4OC0zMy4zMywxMS42NDQtMzUuODM1bDE1MS40MjktMjIuMDA0DQoJbDY3LjcyMS0xMzcuMjE3QzI0NC44NjgsNy41OTcsMjY3LjEzMyw3LjU5NywyNzQuODQsMjMuMjEyeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF8yXyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzNjEuMzM4IiB5MT0iMzkwLjEzMTQiIHgyPSIyMDEuMjM4IiB5Mj0iMzkwLjEzMTQiIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMS4wNjY3IDAgMCAtMS4wNjY3IDMuMjY2NiA1NTcuNTM1MikiPg0KCTxzdG9wICBvZmZzZXQ9IjAiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkMyMDA7c3RvcC1vcGFjaXR5OjAiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjIwMyIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQkIwMDtzdG9wLW9wYWNpdHk6MC4yMDMiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjQ5OSIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQTcwMDtzdG9wLW9wYWNpdHk6MC40OTkiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjg1MiIgc3R5bGU9InN0b3AtY29sb3I6I0ZGODgwMDtzdG9wLW9wYWNpdHk6MC44NTIiLz4NCgk8c3RvcCAgb2Zmc2V0PSIxIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY3ODAwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPHBhdGggc3R5bGU9ImZpbGw6dXJsKCNTVkdJRF8yXyk7IiBkPSJNMzQyLjU2LDE2MC40M0wyNzQuODQsMjMuMjEyYy0zLjg1My03LjgwNy0xMS4zNDYtMTEuNzExLTE4LjgzOS0xMS43MTF2MjU5Ljc4OQ0KCUwzNDIuNTYsMTYwLjQzeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF8zXyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzODguNjg3NCIgeTE9IjE0NC44MzgzIiB4Mj0iMzQ2LjI4NzQiIHkyPSIzNTMuNjM4MyIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzNfKTsiIGQ9Ik0zOTYuMDU4LDMyNS4wNzdsMTA5LjU3NS0xMDYuODFjNi4xNTEtNS45OTYsNy41ODYtMTQuMTg1LDUuMzk5LTIxLjI0N0wyNTYsMjcxLjI4OQ0KCUwzOTYuMDU4LDMyNS4wNzd6Ii8+DQo8bGluZWFyR3JhZGllbnQgaWQ9IlNWR0lEXzRfIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjE4My4wOTc3IiB5MT0iMzUuMTA4NyIgeDI9IjM0OS4xNTc3IiB5Mj0iMjAxLjE2ODciIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMS4wNjY3IDAgMCAtMS4wNjY3IDMuMjY2NiA1NTcuNTM1MikiPg0KCTxzdG9wICBvZmZzZXQ9IjAiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRkMyMDA7c3RvcC1vcGFjaXR5OjAiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjIwMyIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQkIwMDtzdG9wLW9wYWNpdHk6MC4yMDMiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjQ5OSIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQTcwMDtzdG9wLW9wYWNpdHk6MC40OTkiLz4NCgk8c3RvcCAgb2Zmc2V0PSIwLjg1MiIgc3R5bGU9InN0b3AtY29sb3I6I0ZGODgwMDtzdG9wLW9wYWNpdHk6MC44NTIiLz4NCgk8c3RvcCAgb2Zmc2V0PSIxIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY3ODAwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPHBhdGggc3R5bGU9ImZpbGw6dXJsKCNTVkdJRF80Xyk7IiBkPSJNNDEzLjYzLDQ5Ni4zOTNMMjU2LDI3MS4yODl2MTU1LjU0NmwxMzUuNDQyLDcxLjIwNg0KCUMzOTkuMTc2LDUwMi4xMDcsNDA3LjU2Myw1MDAuODM1LDQxMy42Myw0OTYuMzkzeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF81XyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSI2NC42Nzc3IiB5MT0iMjQ1LjEwOCIgeDI9IjE4Ny4wNzc3IiB5Mj0iMTQyLjcwOCIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzVfKTsiIGQ9Ik0yNTYsMjcxLjI4OWwtMTQwLjA1OCw1My43ODhMOTAuMDc2LDQ3NS44OTRjLTEuNDY3LDguNTUsMi4yNzEsMTYuMDg3LDguMjk0LDIwLjQ5OQ0KCUwyNTYsMjcxLjI4OXoiLz4NCjxsaW5lYXJHcmFkaWVudCBpZD0iU1ZHSURfNl8iIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMTU2LjQzMzQiIHkxPSI0MTQuMDIiIHgyPSIxMDYuODMzNCIgeTI9IjI3My4yMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzZfKTsiIGQ9Ik0wLjk2OCwxOTcuMDIxTDI1NiwyNzEuMjg5bC04Ni41Ni0xMTAuODZMMTguMDExLDE4Mi40MzQNCglDOS4yOCwxODMuNzAyLDMuMjE0LDE4OS43NjcsMC45NjgsMTk3LjAyMUwwLjk2OCwxOTcuMDIxeiIvPg0KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF83XyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzNDMuMTM5OSIgeTE9IjM5OS4zMTY0IiB4Mj0iLTIxLjI2MDEiIHkyPSIyNDQuMTE2NCIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxLjA2NjcgMCAwIC0xLjA2NjcgMy4yNjY2IDU1Ny41MzUyKSI+DQoJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQzIwMDtzdG9wLW9wYWNpdHk6MCIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuMjAzIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZCQjAwO3N0b3Atb3BhY2l0eTowLjIwMyIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuNDk5IiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBNzAwO3N0b3Atb3BhY2l0eTowLjQ5OSIvPg0KCTxzdG9wICBvZmZzZXQ9IjAuODUyIiBzdHlsZT0ic3RvcC1jb2xvcjojRkY4ODAwO3N0b3Atb3BhY2l0eTowLjg1MiIvPg0KCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjc4MDAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cGF0aCBzdHlsZT0iZmlsbDp1cmwoI1NWR0lEXzdfKTsiIGQ9Ik0xMTUuOTQzLDMyNS4wNzdMNi4zNjcsMjE4LjI2OGMtNi4xNTEtNS45OTYtNy41ODYtMTQuMTg1LTUuMzk5LTIxLjI0N0wyNTYsMjcxLjI4OQ0KCUwxMTUuOTQzLDMyNS4wNzd6Ii8+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8L3N2Zz4NCg==';
 let doubanAPIKey = GM_getValue("doubanAPIKey", '');
 let setDoubanAPIKey = function () {
     let key = prompt("请输入你的豆瓣APIKey", GM_getValue("doubanAPIKey", ''));
@@ -31,14 +41,69 @@ let setDoubanAPIKey = function () {
         GM_setValue("doubanAPIKey", key);
     }
 };
+let staredMovies = GM_getValue("staredMovies", {});
+let starMovie = function(starId,date){
+    date = date || new Date();
+    staredMovies[starId] = +(date);
+    GM_setValue('staredMovies',staredMovies);
+}
+let unStarMovie = function(starId){
+    delete staredMovies[starId];
+    GM_setValue('staredMovies',staredMovies);
+}
+let checkMovieStared = function(starId,defaultValue){
+    return staredMovies.hasOwnProperty(starId)?staredMovies[starId]:defaultValue;
+}
+let exportStaredMovies = function(){
+    let str = JSON.stringify(staredMovies);
+    let data = encode(str);
+    let blob = new Blob( [ data ], {
+        type: 'application/octet-stream'
+    });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('download', data.name != null ? data.name : 'staredMovies.json');
+    document.documentElement.appendChild(a);
+    let e = new MouseEvent('click');
+    a.dispatchEvent(e);
+    document.documentElement.removeChild(a);
+    setTimeout(function() {
+        URL.revokeObjectURL(url);
+        if ('close' in blob) blob.close();
+        blob = undefined;
+    }, 1000);
+    GM_download(url);
+}
+let importStaredMovies = function(){
+    let movies = prompt("请输入从别处导出的已收藏电影",'');
+    if (movies !== null) {
+        let _movies = JSON.parse(movies);
+        for( let movieId in _movies){
+            staredMovies[movieId] = _movies[movieId];
+        }
+        GM_setValue('staredMovies',staredMovies);
+        overlib('<span>成功导入'+Object.keys(_movies).length+'部已收藏电影</span>');
+        setTimeout(nd,5000);
+    }
+}
+for (let s of GM_listValues()){
+    if(s.indexOf('starInfo_') !== -1){
+        starMovie(s.replace('starInfo_',''),GM_getValue(s, +(new Date())));
+        GM_deleteValue(s);
+    }
+}
+
 GM_registerMenuCommand("设置豆瓣APIKey", setDoubanAPIKey);
+GM_registerMenuCommand("导出已收藏电影", exportStaredMovies);
+GM_registerMenuCommand("导入已收藏电影", importStaredMovies);
 
 $('body').on('mouseenter', 'a[data-imdbId]', function() {
-    var imdbId = $(this).attr('data-imdbId');
-    var aTag = this;
+    let imdbId = $(this).attr('data-imdbId');
+    let aTag = this;
     overlib('<span>数据加载中...</span>');
     function showDouBanInfo(data,aTag) {
-        var html = '<style type="text/css"> .db-container {width: 600px; } .db-title p {font-size: x-large; margin: 5px 0px; text-align: center; font-weight: bolder; } .db-left {width: 150px; float: left; text-align: center; } .db-poster {margin: 10px 10px; text-align: center; } .db-score {margin: 0 10px; } .db-score p {font-size: large; } .db-info {width: 450px; float: right; } </style>';
+        let html = '<style type="text/css"> .db-container {width: 600px; } .db-title p {font-size: x-large; margin: 5px 0px; text-align: center; font-weight: bolder; } .db-left {width: 150px; float: left; text-align: center; } .db-poster {margin: 10px 10px; text-align: center; } .db-score {margin: 0 10px; } .db-score p {font-size: large; } .db-info {width: 450px; float: right; } </style>';
         html += '<div class="db-container">';
         html += '    <div class="db-title">';
         html += '        <p>' + data.title + ' ' + data.alt_title + ' (' + data.attrs.year.join(' / ') + ')</p>';
@@ -61,10 +126,10 @@ $('body').on('mouseenter', 'a[data-imdbId]', function() {
         html += '    </div>';
         html += '</div>';
         overlib(html);
-        var link = data.mobile_link.replace('m.douban.com','douban.com');
+        let link = data.mobile_link.replace('m.douban.com','douban.com');
         $(aTag).attr('href',link).attr('target','_blank');
     }
-    var data = GM_getValue('douBanInfo_' + imdbId, undefined);
+    let data = GM_getValue('douBanInfo_' + imdbId, undefined);
 
     if (undefined !== data && +(new Date()) - data.lastModify < 86400000) {
         showDouBanInfo(data,aTag);
@@ -75,7 +140,7 @@ $('body').on('mouseenter', 'a[data-imdbId]', function() {
         method: 'GET',
         url: 'https://api.douban.com/v2/movie/imdb/' + imdbId +'?apikey='+ doubanAPIKey,
         onload: function(response) {
-            var data = JSON.parse(response.responseText);
+            let data = JSON.parse(response.responseText);
             if (5000 === data.code) {
                 overlib('<span>你太潮了,豆瓣都没资料...</span>');
             }else if (!isEmpty(data.alt)) {
@@ -98,11 +163,11 @@ $('body').on('mouseenter', 'a[data-imdbId]', function() {
 });
 
 $('body').on('mouseenter', 'a[data-starId]', function() {
-     var starId = $(this).attr('data-starId');
-     var data = GM_getValue('starInfo_' + starId, undefined);
+    let starId = $(this).attr('data-starId');
+    let data = checkMovieStared(starId, undefined);
 
     if (undefined !== data) {
-        var date = new Date(data);
+        let date = new Date(data);
         overlib('<span>已于'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+'收藏了此影片,点击取消收藏</span>');
         return;
     }
@@ -110,18 +175,18 @@ $('body').on('mouseenter', 'a[data-starId]', function() {
 });
 
 $('body').on('click', 'a[data-starId]', function() {
-     var starId = $(this).attr('data-starId');
-     var stared = $(this).attr('data-stared');
+    let starId = $(this).attr('data-starId');
+    let stared = $(this).attr('data-stared');
 
     if ('1' == stared) {
-        GM_deleteValue('starInfo_' + starId);
+        unStarMovie(starId);
         $(this).attr('data-stared','0');
         $(this).find('img').attr('src',emptyStar).css({'height':'18px'});;
         overlib('<span>已取消收藏</span>');
         setTimeout(nd,800);
     }else{
-        var date = new Date();
-        GM_setValue('starInfo_' + starId,+(date));
+        let date = new Date();
+        starMovie(starId,+(date));
         $(this).attr('data-stared','1');
         $(this).find('img').attr('src',solidStar).css({'height':'22px'});
         overlib('<span>已于'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+'收藏了此影片,点击取消收藏</span>');
@@ -131,11 +196,11 @@ $('body').on('click', 'a[data-starId]', function() {
 
 $(document).on('ready AutoPagerize_DOMNodeInserted', function(e) {
     $('a[href^="/torrents.php?imdb="]').each(function(i,e){
-        var ee = $(e);
+        let ee = $(e);
         if(ee.attr('doubaned') =='doubaned') return;
-        var imdbId = $(this).attr('href').split("=").pop();
+        let imdbId = $(this).attr('href').split("=").pop();
         ee.after('<a data-imdbId="'+imdbId+'" style="margin-left:5px;"><img src="https://img3.doubanio.com/favicon.ico" style="height:18px;"></img></a>');
-        var started = GM_getValue('starInfo_' + imdbId, undefined);
+        let started = checkMovieStared(imdbId, undefined);
         if (undefined === started) {
             ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="0"><img src="'+emptyStar+'" style="height:18px;"></img></a>')
         }else{
@@ -144,15 +209,15 @@ $(document).on('ready AutoPagerize_DOMNodeInserted', function(e) {
         ee.attr('doubaned','doubaned');
     });
     $('.lista span:contains("IMDB:")[hightlighted!=1]').each(function() {
-        var txt = $(this).text();
-        var rate = txt.match(/MDB: ([\d\.]+)\/\d+/);
+        let txt = $(this).text();
+        let rate = txt.match(/MDB: ([\d\.]+)\/\d+/);
         if (undefined !== rate[1] && 6.0 <= parseFloat(rate[1])) {
             $(this).html($(this).text().replace(rate[1], '<span style="color: rgb(183, 0, 0); font-size: large;">' + rate[1] + '</span>')).attr('hightlighted', 1);
         }
     });
-    var thisYear = (new Date()).getFullYear();
-    var years = [thisYear - 2, thisYear - 1, thisYear];
-    for (var i in years) {
+    let thisYear = (new Date()).getFullYear();
+    let years = [thisYear - 2, thisYear - 1, thisYear];
+    for (let i in years) {
         $('a[href^="/torrent/"]:contains("' + years[i] + '")[hightlighted!=1]').each(function() {
             $(this).html($(this).text().replace(years[i], '<span style="font-size: large; font-weight: bold; color: #CE00B9; ">' + years[i] + '</span>')).attr('hightlighted', 1);
         });
