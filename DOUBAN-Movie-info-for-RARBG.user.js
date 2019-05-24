@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.5.2
+// @version      0.5.3
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -10,6 +10,8 @@
 // @match        http://rarbg.is/*
 // @match        https://rarbgprx.org/*
 // @match        http://rarbgprx.org/*
+// @match        https://proxyrarbg.org/*
+// @match        http://proxyrarbg.org/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
