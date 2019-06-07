@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.5.3
+// @version      0.5.4
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -18,6 +18,7 @@
 // @grant        GM_deleteValue
 // @grant        GM_listValues
 // @grant        GM_registerMenuCommand
+// @grant        GM_unregisterMenuCommand
 // @grant        GM_download
 // @grant        GM_info
 // @connect      api.douban.com
@@ -89,11 +90,51 @@ let importStaredMovies = function(){
         setTimeout(nd,5000);
     }
 }
+
+let enableSwitchListAMenuID,disableSwitchListAMenuID,switchListA = function(){
+    if(GM_getValue('switchListA',0) == 0){
+        GM_setValue('switchListA',1);
+        if(disableSwitchListAMenuID){
+            GM_unregisterMenuCommand(disableSwitchListAMenuID);
+        }
+    }else{
+        GM_setValue('switchListA',0);
+        if(enableSwitchListAMenuID){
+            GM_unregisterMenuCommand(enableSwitchListAMenuID);
+        }
+    }
+    window.location.reload();
+}
+async function asyncGM_xmlhttpRequest(url) {
+    return new Promise(function (resolve, reject) {
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: url,
+            onload: function(response) {
+                resolve(response.responseText);
+            },
+            onerror: function () {
+                reject('你网络有问题...');
+            },
+            ontimeout: function () {
+                reject('请求超时...');
+            }
+        });
+    });
+}
+
+
 for (let s of GM_listValues()){
     if(s.indexOf('starInfo_') !== -1){
         starMovie(s.replace('starInfo_',''),GM_getValue(s, +(new Date())));
         GM_deleteValue(s);
     }
+}
+
+if(GM_getValue('switchListA',0) == 0){
+    enableSwitchListAMenuID = GM_registerMenuCommand("开启推荐项豆瓣信息", switchListA);
+}else{
+    disableSwitchListAMenuID = GM_registerMenuCommand("取消推荐项豆瓣信息", switchListA);
 }
 
 GM_registerMenuCommand("设置豆瓣APIKey", setDoubanAPIKey);
@@ -196,7 +237,7 @@ $('body').on('click', 'a[data-starId]', function() {
     }
 });
 
-$(document).on('ready AutoPagerize_DOMNodeInserted', function(e) {
+$(document).on('ready AutoPagerize_DOMNodeInserted lista ', function(e) {
     $('a[href^="/torrents.php?imdb="]').each(function(i,e){
         let ee = $(e);
         if(ee.attr('doubaned') =='doubaned') return;
@@ -226,7 +267,21 @@ $(document).on('ready AutoPagerize_DOMNodeInserted', function(e) {
     }
 });
 $(document).bind("ready", function() {});
+
 $(document).ready(function() {
+    if(GM_getValue('switchListA',0) == 1){
+        let reg = /<a\s+href="\/torrents.php\?imdb=\w+">/;
+        $('td.lista[valign="top"] > a').each(function(){
+            let that = $(this);
+            (async () => {
+                let html = await asyncGM_xmlhttpRequest(location.protocol + '//'+ location.host + $(this).attr('href'));
+                let matches = reg.exec(html);
+                let link = '<br />'+matches[0] + '<img src="https://dyncdn.me/static/20/images/imdb_thumb.gif" border="0"></a>';
+                that.after(link);
+                $(document).trigger("lista");
+            })();
+        });
+    }
     $(document).trigger("ready");
 });
 

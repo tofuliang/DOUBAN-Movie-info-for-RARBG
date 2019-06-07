@@ -1,9 +1,11 @@
 # 注意
-现在调用豆瓣接口需要带上API key,建议自己找一个,然后在设置菜单填入.
+* 现在调用豆瓣接口需要带上API key,建议自己找一个,然后在设置菜单填入.
+
+* APIKey相关消息参见[这里](https://www.v2ex.com/t/563642)
+
+* 首页上方`推荐项`的豆瓣信息通过特殊方法实现,如果RARBG提示IP异常,请在关闭此功能至IP正常为止.
 
 ![设置APIKey](https://github.com/tofuliang/DOUBAN-Movie-info-for-RARBG/raw/master/setAPIKey.png)
-
-APIKey相关消息参见[这里](https://www.v2ex.com/t/563642)
 
 # 功能
 
