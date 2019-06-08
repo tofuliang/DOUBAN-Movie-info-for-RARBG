@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.5.4
+// @version      0.5.4.1
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -231,7 +231,7 @@ $('body').on('click', 'a[data-starId]', function() {
         let date = new Date();
         starMovie(starId,+(date));
         $(this).attr('data-stared','1');
-        $(this).find('img').attr('src',solidStar).css({'height':'22px'});
+        $(this).find('img').attr('src',solidStar).css({'height':'18px'});
         overlib('<span>已于'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+'收藏了此影片,点击取消收藏</span>');
         setTimeout(nd,800);
     }
@@ -247,7 +247,7 @@ $(document).on('ready AutoPagerize_DOMNodeInserted lista ', function(e) {
         if (undefined === started) {
             ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="0"><img src="'+emptyStar+'" style="height:18px;"></img></a>')
         }else{
-            ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="1"><img src="'+solidStar+'" style="height:22px;"></img></a>')
+            ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="1"><img src="'+solidStar+'" style="height:18px;"></img></a>')
         }
         ee.attr('doubaned','doubaned');
     });
@@ -276,8 +276,8 @@ $(document).ready(function() {
             (async () => {
                 let html = await asyncGM_xmlhttpRequest(location.protocol + '//'+ location.host + $(this).attr('href'));
                 let matches = reg.exec(html);
-                let link = '<br />'+matches[0] + '<img src="https://dyncdn.me/static/20/images/imdb_thumb.gif" border="0"></a>';
-                that.after(link);
+                let link = matches[0].replace('<a','<a style="height: 15px; display: inline-block;"') + '<img src="https://dyncdn.me/static/20/images/imdb_thumb.gif" border="0"></a><br />';
+                that.before(link);
                 $(document).trigger("lista");
             })();
         });
