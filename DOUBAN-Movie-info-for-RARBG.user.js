@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.5.5
+// @version      0.5.6
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -23,6 +23,7 @@
 // @grant        GM_info
 // @connect      api.douban.com
 // ==/UserScript==
+
 
 function isEmpty(s) {
     return !s || s === 'N/A';
@@ -188,52 +189,72 @@ GM_registerMenuCommand("导出已收藏电影", exportStaredMovies);
 GM_registerMenuCommand("导入已收藏电影", importStaredMovies);
 
 $('body').on('mouseenter', 'a[data-imdbId]', function() {
+    let timer =0, overlibed = 0;
     let imdbId = $(this).attr('data-imdbId');
     let aTag = this;
-    overlib('<span>数据加载中...</span>');
-    function showDouBanInfo(data,aTag) {
-        let html = '<style type="text/css"> .db-container {width: 600px; } .db-title p {font-size: x-large; margin: 5px 0px; text-align: center; font-weight: bolder; } .db-left {width: 150px; float: left; text-align: center; } .db-poster {margin: 10px 10px; text-align: center; } .db-score {margin: 0 10px; } .db-score p {font-size: large; } .db-info {width: 450px; float: right; } </style>';
-        html += '<div class="db-container">';
-        html += '    <div class="db-title">';
-        html += '        <p>' + data.title + ' ' + data.alt_title + ' (' + data.attrs.year.join(' / ') + ')</p>';
-        html += '    </div>';
-        html += '    <div class="db-left"><div class="db-poster"><img style="max-width: 135px;" src="' + data.image + '"></div>';
-        html += '    <div class="db-score">';
-        html += '        <p>' + data.rating.average + ' / ' + data.rating.numRaters + '</p>';
-        html += '    </div></div>';
-        html += '    <div class="db-info">';
-        if (!isEmpty(data.attrs.pubdate)) { html += '        <p>上映时间: ' + data.attrs.pubdate.join(' / ') + '</p>'; }
-        if (!isEmpty(data.attrs.movie_duration)) { html += '        <p>片长: ' + data.attrs.movie_duration.join(' / ') + '</p>'; }
-        if (!isEmpty(data.attrs.title)) { html += '        <p>别名: ' + data.attrs.title.join(' / ') + '</p>'; }
-        if (!isEmpty(data.attrs.director)) { html += '        <p>导演: ' + data.attrs.director.join(' / ') + '</p>'; }
-        if (!isEmpty(data.attrs.writer)) { html += '        <p>编剧: ' + data.attrs.writer.join(' / ') + '</p>'; }
-        if (!isEmpty(data.attrs.cast)) { html += '        <p>主演: ' + data.attrs.cast.join(' / ') + ' </p>'; }
-        if (!isEmpty(data.attrs.movie_type)) { html += '        <p>类型: ' + data.attrs.movie_type.join(' / ') + '</p>'; }
-        if (!isEmpty(data.attrs.country)) { html += '        <p>制片国家/地区: ' + data.attrs.country.join(' / ') + '</p>'; }
-        if (!isEmpty(data.attrs.language)) { html += '        <p>语言: ' + data.attrs.language.join(' / ') + '</p>'; }
-        if (!isEmpty(data.summary)) { html += '        <p>简介: ' + data.summary + '</p>'; }
-        html += '    </div>';
-        html += '</div>';
-        overlib(html);
-        let link = data.mobile_link.replace('m.douban.com','douban.com');
-        $(aTag).attr('href',link).attr('target','_blank');
-    }
-    (async () => {
-        let data = await getDoubanData(imdbId);
-        if(false !== data) showDouBanInfo(data,aTag);
-    })();
+    timer = setTimeout(function(){
+        overlib('<span>数据加载中...</span>');
+        function showDouBanInfo(data,aTag) {
+            let html = '<style type="text/css"> .db-container {width: 1000px; } .db-title p {font-size: x-large; margin: 5px 0px; text-align: center; font-weight: bolder; } .db-left {width: 150px; float: left; text-align: center; } .db-poster {margin: 10px 10px; text-align: center; } .db-score {margin: 0 10px; } .db-score p {font-size: large; } .db-info {width: 850px; float: right; } </style>';
+            html += '<div class="db-container">';
+            html += '    <div class="db-title">';
+            html += '        <p>' + data.title + ' ' + data.alt_title + ' (' + data.attrs.year.join(' / ') + ')</p>';
+            html += '    </div>';
+            html += '    <div class="db-left"><div class="db-poster"><img style="max-width: 135px;" src="' + data.image + '"></div>';
+            html += '    <div class="db-score">';
+            html += '        <p>' + data.rating.average + ' / ' + data.rating.numRaters + '</p>';
+            html += '    </div></div>';
+            html += '    <div class="db-info">';
+            if (!isEmpty(data.attrs.pubdate)) { html += '        <p>上映时间: ' + data.attrs.pubdate.join(' / ') + '</p>'; }
+            if (!isEmpty(data.attrs.movie_duration)) { html += '        <p>片长: ' + data.attrs.movie_duration.join(' / ') + '</p>'; }
+            if (!isEmpty(data.attrs.title)) { html += '        <p>别名: ' + data.attrs.title.join(' / ') + '</p>'; }
+            if (!isEmpty(data.attrs.director)) { html += '        <p>导演: ' + data.attrs.director.join(' / ') + '</p>'; }
+            if (!isEmpty(data.attrs.writer)) { html += '        <p>编剧: ' + data.attrs.writer.join(' / ') + '</p>'; }
+            if (!isEmpty(data.attrs.cast)) { html += '        <p>主演: ' + data.attrs.cast.join(' / ') + ' </p>'; }
+            if (!isEmpty(data.attrs.movie_type)) { html += '        <p>类型: ' + data.attrs.movie_type.join(' / ') + '</p>'; }
+            if (!isEmpty(data.attrs.country)) { html += '        <p>制片国家/地区: ' + data.attrs.country.join(' / ') + '</p>'; }
+            if (!isEmpty(data.attrs.language)) { html += '        <p>语言: ' + data.attrs.language.join(' / ') + '</p>'; }
+            if (!isEmpty(data.summary)) { html += '        <p>简介: ' + data.summary + '</p>'; }
+            html += '    </div>';
+            html += '</div>';
+            overlib(html);
+            let link = data.mobile_link.replace('m.douban.com','douban.com');
+            $(aTag).attr('href',link).attr('target','_blank');
+        }
+        (async () => {
+            let data = await getDoubanData(imdbId);
+            if(false !== data) showDouBanInfo(data,aTag);
+        })();
+        overlibed = 1;
+    },100);
+    $(this).on('mouseleave',function(){
+        if(0 == overlibed){
+            clearTimeout(timer);
+        }
+    });
 });
 
 $('body').on('mouseenter', 'a[data-starId]', function() {
+    let timer =0, overlibed = 0;
     let starId = $(this).attr('data-starId');
-    let data = checkMovieStared(starId, undefined);
-
-    if (undefined !== data) {
-        let date = new Date(data);
-        overlib('<span>已于'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+'收藏了此影片,点击取消收藏</span>');
-        return;
-    }
-    overlib('<span>点击收藏此影片</span>');
+    timer = setTimeout(function(){
+        let data = checkMovieStared(starId, undefined);
+        if (undefined !== data) {
+            let date = new Date(data);
+            overlib('<span>已于'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+'收藏了此影片,点击取消收藏</span>');
+            overlibed=1;
+            return;
+        }
+        overlib('<span>点击收藏此影片</span>');
+        overlibed =1;
+    },300);
+    $(this).on('mouseleave',function(){
+        if(overlibed){
+            nd();
+        }else{
+            clearTimeout(timer);
+        }
+    });
 });
 
 $('body').on('click', 'a[data-starId]', function() {
@@ -264,13 +285,13 @@ $(document).on('ready AutoPagerize_DOMNodeInserted lista ', function(e) {
         let ee = $(e);
         if(ee.attr('doubaned') =='doubaned') return;
         let imdbId = $(this).attr('href').split("=").pop();
-        ee.after('<a data-imdbId="'+imdbId+'" style="margin-left:5px;"><img src="https://img3.doubanio.com/favicon.ico" style="height:18px;"></img></a>');
         let started = checkMovieStared(imdbId, undefined);
         if (undefined === started) {
             ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="0"><img src="'+emptyStar+'" style="height:18px;"></img></a>')
         }else{
             ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="1"><img src="'+solidStar+'" style="height:18px;"></img></a>')
         }
+        ee.after('<a data-imdbId="'+imdbId+'" style="margin-left:5px;"><img src="https://img3.doubanio.com/favicon.ico" style="height:18px;"></img></a>');
         ee.attr('doubaned','doubaned');
     });
     $('.lista span:contains("IMDB:")[hightlighted!=1]').each(function() {
@@ -287,6 +308,34 @@ $(document).on('ready AutoPagerize_DOMNodeInserted lista ', function(e) {
             $(this).html($(this).text().replace(years[i], '<span style="font-size: large; font-weight: bold; color: #CE00B9; ">' + years[i] + '</span>')).attr('hightlighted', 1);
         });
     }
+    (function(){
+        document.querySelectorAll('a[onmouseover]').forEach(function (a) {
+            let overFn = a.getAttribute('onmouseover');
+            let timer = 0;
+            let overlibed = 0;
+            if(overFn.indexOf('overlib') != -1){
+                a.onmouseover = null;
+                a.onmouseover = function () {
+                    timer = setTimeout(function () {
+                        let html = /^return\s+overlib\('(.*)'\)$/.exec(overFn);
+                        if(html.length > 1) {
+                            overlib(html[1].replace('\\\'','\'').replace("\\'","'"));
+                            overlibed = 1;
+                        }
+                    }, 500);
+                }
+                let outFn = a.getAttribute('onmouseout');
+                a.onmouseout = null;
+                a.onmouseout = function(){
+                    if(overlibed){
+                        nd();
+                    }else{
+                        clearTimeout(timer);
+                    }
+                }
+            }
+        });
+    })();
 });
 $(document).bind("ready", function() {});
 
