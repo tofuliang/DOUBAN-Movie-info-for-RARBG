@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DOUBAN Movie info for RARBG
 // @namespace    http://rarbg.to/
-// @version      0.5.6
+// @version      0.5.7
 // @description  Adds douban movie info to RARBG.to
 // @author       tofuliang
 // @match        https://rarbg.to/*
@@ -341,7 +341,7 @@ $(document).bind("ready", function() {});
 
 $(document).ready(function() {
     if(GM_getValue('switchListA',0) == 1){
-        let reg = /<a\s+href="\/torrents.php\?imdb=\w+">/;
+        let reg = /<a\s+href="\/torrents.php\?imdb=(\w+)">|https:\/\/www.imdb.com\/title\/(\w+)/;
         $('td.lista[valign="top"] > a').each(function(){
             let that = $(this);
             (async () => {
@@ -349,7 +349,8 @@ $(document).ready(function() {
                 if(undefined === link){
                     let html = await asyncGM_xmlhttpRequest(location.protocol + '//'+ location.host + $(this).attr('href'));
                     let matches = reg.exec(html.responseText);
-                    link = matches[0].replace('<a','<a style="height: 15px; display: inline-block;width:1px;"') + '</a><br />';
+                    let imdbId=matches[1]||matches[2];
+                    link = `<a style="height: 15px; display: inline-block;width:1px;" href="/torrents.php?imdb=${imdbId}"></a>`;
                     GM_setValue('rec_'+$(this).attr('href'),link);
                 }
                 that.before(link);
@@ -367,7 +368,7 @@ $(document).ready(function() {
             let data = await getDoubanData(sortedMovies[index][0]);
             listTpl = `<tr class="lista2">
 <td align="center" class="lista">
-<a onmouseover="return overlib('<img src=\\'${data.image}\\' border=0>')" onmouseout="return nd();" href="/torrents.php?imdb=${sortedMovies[index][0]}">${data.title}[${data.alt_title}]</a>
+<a onmouseover="return overlib('<img src=\\'${data.image}\\' border=0>')" onmouseout="return nd();" href="/torrents.php?imdb=${sortedMovies[index][0]}" title="${data.title}.${!isEmpty(data.attrs.year)&&!isEmpty(data.attrs.year[0])?data.attrs.year[0]:''}">${data.title}[${data.alt_title}]</a>
 <br>
 <span style="color:DarkSlateGray">${ !isEmpty(data.attrs.movie_type)?data.attrs.movie_type.join(','):''}  豆瓣评分: ${data.rating.average}/${data.rating.numRaters}</span>
 </td>
@@ -391,4 +392,5 @@ ${list}
         $(document).trigger("ready");
     })();
 });
+
 
