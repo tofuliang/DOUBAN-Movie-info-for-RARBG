@@ -1,11 +1,11 @@
 # 注意
-* 现在调用豆瓣接口需要带上API key,建议自己找一个,然后在设置菜单填入.
+* ~~现在调用豆瓣接口需要带上API key,建议自己找一个,然后在设置菜单填入.~~
 
-* APIKey相关消息参见[这里](https://www.v2ex.com/t/563642)
+* ~~APIKey相关消息参见[这里](https://www.v2ex.com/t/563642)~~
 
 * 首页上方`推荐项`的豆瓣信息通过特殊方法实现,如果RARBG提示IP异常,请在关闭此功能至IP正常为止.
 
-![设置APIKey](https://github.com/tofuliang/DOUBAN-Movie-info-for-RARBG/raw/master/setAPIKey.png)
+* 新版使用了网页手机版的数据源，数据结构跟完整度跟旧API的都不一样，升级到0.6.0后需要清除脚本缓存（点击脚本名进去编辑后，切换到存储页，全选后替换为`{}`,然后点击`保存`即可）。
 
 # 功能
 
