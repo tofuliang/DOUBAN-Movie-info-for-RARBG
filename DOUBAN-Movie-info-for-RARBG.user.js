@@ -1,19 +1,11 @@
 // ==UserScript==
-// @name         DOUBAN Movie info for RARBG
-// @namespace    http://rarbg.to/
-// @version      0.6.0
-// @description  Adds douban movie info to RARBG.to
+// @name         DOUBAN Movie info for TorrentGalaxy
+// @namespace    http://tgx.rs/
+// @version      0.7.0
+// @description  Adds douban movie info to TorrentGalaxy
 // @author       tofuliang
-// @match        https://rarbg.to/*
-// @match        http://rarbg.to/*
-// @match        https://rarbg.is/*
-// @match        http://rarbg.is/*
-// @match        https://rarbgprx.org/*
-// @match        http://rarbgprx.org/*
-// @match        https://proxyrarbg.org/*
-// @match        http://proxyrarbg.org/*
-// @match        http://rarbggo.org/*
-// @match        https://rarbggo.org/*
+// @match        https://tgx.rs/*
+// @require      https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.slim.min.js
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -221,9 +213,9 @@ $('body').on('mouseenter', 'a[data-imdbId]', function() {
     let imdbId = $(this).attr('data-imdbId');
     let aTag = this;
     timer = setTimeout(function(){
-        overlib('<span>数据加载中...</span>');
+        overlib('<span style="background:#ccc;">数据加载中...</span>');
         function showDouBanInfo(data,aTag) {
-            let html = '<style type="text/css"> .db-container {width: 1000px; } .db-title p {font-size: x-large; margin: 5px 0px; text-align: center; font-weight: bolder; } .db-left {width: 150px; float: left; text-align: center; } .db-poster {margin: 10px 10px; text-align: center; } .db-score {margin: 0 10px; } .db-score p {font-size: large; } .db-info {width: 850px; float: right; } </style>';
+            let html = '<style type="text/css"> .db-container {width: 1000px;overflow: hidden;background:#ccc;} .db-title p {font-size: x-large; margin: 5px 0px; text-align: center; font-weight: bolder; } .db-left {width: 150px; float: left; text-align: center; } .db-poster {margin: 10px 10px; text-align: center; } .db-score {margin: 0 10px; } .db-score p {font-size: large; } .db-info {width: 850px; float: right; } </style>';
             html += '<div class="db-container">';
             html += '    <div class="db-title">';
             html += '        <p>' + data.original_title + ' ' + data.title + ' (' + data.year + ')</p>';
@@ -252,7 +244,7 @@ $('body').on('mouseenter', 'a[data-imdbId]', function() {
         }
         (async () => {
             let data = await getDoubanData(imdbId);
-            // console.log(data)
+            // debugger
             if(false !== data) showDouBanInfo(data,aTag);
         })();
         overlibed = 1;
@@ -315,6 +307,20 @@ $(document).on('ready AutoPagerize_DOMNodeInserted lista ', function(e) {
         let ee = $(e);
         if(ee.attr('doubaned') ==='doubaned') return;
         let imdbId = $(this).attr('href').split("=").pop();
+        let started = checkMovieStared(imdbId, undefined);
+        if (undefined === started) {
+            ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="0"><img src="'+emptyStar+'" style="height:18px;"></img></a>')
+        }else{
+            ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="1"><img src="'+solidStar+'" style="height:18px;"></img></a>')
+        }
+        ee.after('<a data-imdbId="'+imdbId+'" style="margin-left:5px;"><img src="https://img3.doubanio.com/favicon.ico" style="height:18px;"></img></a>');
+        ee.attr('doubaned','doubaned');
+    });
+    $('a[href^="/torrents.php?search="]').each(function(i,e){
+        let ee = $(e);
+        if(ee.attr('doubaned') ==='doubaned') return;
+        let imdbId = $(this).attr('href').split("=").pop();
+        console.log(imdbId);
         let started = checkMovieStared(imdbId, undefined);
         if (undefined === started) {
             ee.after('<a data-starId="'+imdbId+'" style="margin-left:5px;" data-stared="0"><img src="'+emptyStar+'" style="height:18px;"></img></a>')
@@ -422,5 +428,3 @@ ${list}
         $(document).trigger("ready");
     })();
 });
-
-
